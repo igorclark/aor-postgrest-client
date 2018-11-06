@@ -161,23 +161,13 @@ export default (apiUrl, httpClient = fetchJson) => {
                     total: parseInt(headers.get('content-range').split('/').pop(), 10) || maxInPage,
                 };
             case CREATE:
-				console.log( "CREATE params", params );
-				console.log( "CREATE json", json );
                 return { data: json };
-				/*
-				return {
-                    data: {
-                        ...params.data,
-                        id: json.id
-                    }
-                };
-				*/
             case UPDATE:
                 return { data:params.data, id: params.id };
             case DELETE:
-                return { data:[], id: params.id };
+				return { data: params.previousData };
             case DELETE_MANY:
-                return { data:[], id: params.id };
+                return { data: params.ids };
             case GET_ONE:
 				return { data: json };
             default:

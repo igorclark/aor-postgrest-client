@@ -1,6 +1,6 @@
 {
-  "name": "aor-postgrest-client",
-  "version": "0.2.5",
+  "name": "react-admin-postgrest-client",
+  "version": "0.2.6",
   "description": "A postgrest client for admin-on-rest",
   "main": "src/index.js",
   "scripts": {
@@ -14,7 +14,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tomberek/aor-postgres-client.git"
+    "url": "git+https://github.com/igorclark/react-admin-postgres-client.git"
   },
   "keywords": [
     "reactjs",
@@ -25,9 +25,9 @@
   "author": "Thomas Bereknyei",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tomberek/aor-postgres-client/issues"
+    "url": "https://github.com/igorclark/react-admin-postgres-client/issues"
   },
-  "homepage": "https://github.com/tomberek/aor-postgres-client#readme",
+  "homepage": "https://github.com/igorclark/react-admin-postgres-client#readme",
   "dependencies": {
     "ra-core": "^2.0.3",
     "react": "^16.4.1"

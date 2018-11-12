@@ -29,6 +29,7 @@
   },
   "homepage": "https://github.com/igorclark/react-admin-postgres-client#readme",
   "dependencies": {
+    "jwt-decode": "^2.2.0",
     "ra-core": "^2.0.3",
     "react": "^16.4.1"
   },

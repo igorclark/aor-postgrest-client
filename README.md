@@ -1,6 +1,6 @@
-# postgREST Client for admin-on-rest
+# postgREST Client & Auth provider for react-admin
 
-For using [postgREST](https://github.com/begriffs/postgrest) with [admin-on-rest](https://github.com/marmelab/admin-on-rest), use the `postgrestClient` function to convert AOR's REST dialect into one compatible with postgREST.
+Use the `postgrestClient` and `postgrestAuthenticator` modules to convert [react-admin](https://github.com/marmelab/react-admin)'s REST dialect into one compatible with [postgREST](https://github.com/begriffs/postgrest). Refreshes JWT auth tokens a configurable number of seconds before expiry, until logout.
 
 ## Installation
 
@@ -16,12 +16,18 @@ See the example in `App.js.example`
 // in src/App.js
 import React from 'react';
 import { Admin, Resource } from 'react-admin';
-import postgrestClient from 'aor-postgrest-client';
 import { List, Datagrid, TextField, NumberField } from 'react-admin';
 
 import { ShowButton, EditButton, Edit, SimpleForm, DisabledInput, TextInput, NumberInput } from 'react-admin';
 import { Create} from 'react-admin';
 import { Show, SimpleShowLayout } from 'react-admin';
+
+import { postgrestClient, postgrestAuthenticator } from 'react-admin-postgrest-client';
+
+const dataProvider = postgrestClient( '/rest', httpClient );
+
+const authProvider = postgrestAuthenticator.createAuthProvider( '/rest/rpc/login' );
+const authRefreshSaga = postgrestAuthenticator.createAuthRefreshSaga( '/rest/rpc/refresh_token', 10 ); // seconds before expiry due
 
 const BookList = (props) => (
     <List {...props}>
@@ -59,13 +65,17 @@ export const BookCreate = (props) => (
     </Create>
 );
 const App = () => (
-    <Admin dataProvider={postgrestClient('http://localhost:3000')}>
+	<Admin dataProvider={dataProvider} customSagas={[authRefreshSaga]} authProvider={authProvider} >
         <Resource name="books" show={BookShow} create={BookCreate} edit={BookEdit} list={BookList} />
     </Admin>
 );
 
 export default App;
 ```
+
+## TODO
+
+Find a way to kick off refresh token timer after hard reload.
 
 ## License
 

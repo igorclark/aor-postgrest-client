@@ -1,12 +1,14 @@
 import { AUTH_LOGIN, AUTH_LOGOUT, AUTH_ERROR } from 'react-admin';
-import { fork, takeEvery } from 'redux-saga/effects';
+import { fork, cancel, cancelled, takeEvery } from 'redux-saga/effects';
 import { delay } from 'redux-saga';
 import jwt_decode from 'jwt-decode';
 
-import { USER_LOGIN_SUCCESS, USER_CHECK } from 'ra-core/esm/actions';
+import { USER_LOGIN_SUCCESS, USER_LOGOUT } from 'ra-core/esm/actions';
 
 let moduleLoginUrl;
 let moduleRefreshUrl;
+let moduleSecondsBeforeExpiry;
+let moduleRefreshTask;
 
 const createAuthProvider = ( loginUrl ) => {
 
@@ -80,11 +82,18 @@ const refreshToken = function ( token ) {
 const refreshTokenFunction = function* ( delayInMs, previousToken ) {
 	let tokenToRefresh = previousToken;
 
-	while( true ) {
-		yield delay( delayInMs );
-		const newToken = yield Promise.resolve( refreshToken( tokenToRefresh ) );
-		yield localStorage.setItem( 'token', newToken );
-		tokenToRefresh = newToken;
+	try {
+		while( true ) {
+			yield delay( delayInMs );
+			const newToken = yield Promise.resolve( refreshToken( tokenToRefresh ) );
+			yield localStorage.setItem( 'token', newToken );
+			tokenToRefresh = newToken;
+		}
+	}
+	finally {
+		if( yield cancelled() ) {
+			// fade away
+		}
 	}
 };
 
@@ -96,18 +105,28 @@ const handleLoginSuccess = function* ( action ) {
 	const token = yield localStorage.getItem( 'token' );
 	const decodedToken = jwt_decode( token );
 	const expirySeconds = Math.round( ( decodedToken.exp * 1000 - Date.now() ) / 1000 );
-	const refreshDelayInMs = ( expirySeconds - 5 ) * 1000;
-	yield fork( refreshTokenFunction, refreshDelayInMs, token );
+	const refreshDelayInMs = ( expirySeconds - moduleSecondsBeforeExpiry ) * 1000;
+	moduleRefreshTask = yield fork( refreshTokenFunction, refreshDelayInMs, token );
 };
 
-const createAuthRefreshSaga = ( refreshUrl ) => {
+const handleLogout = function* ( action ) {
+	yield cancel( moduleRefreshTask );
+};
+
+const createAuthRefreshSaga = ( refreshUrl, secondsBeforeExpiry ) => {
 
 	moduleRefreshUrl = refreshUrl;
+	moduleSecondsBeforeExpiry = secondsBeforeExpiry;
 
 	return function* () {
 		yield takeEvery(
 			USER_LOGIN_SUCCESS,
 			handleLoginSuccess
+		);
+
+		yield takeEvery(
+			USER_LOGOUT,
+			handleLogout
 		);
 	};
 };
